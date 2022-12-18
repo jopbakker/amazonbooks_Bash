@@ -17,20 +17,10 @@ This should generate output showing it performed a wget on google.com
 
 
 ## Testing full system
-Create the environment in which to run.
-```bash
-mkdir books && mv books.sh list.csv books/ && cd books
-```
-Add proper data the the list.csv
-```bash
-path=$(pwd)
-sed -i 's|author,url|Brandon_Sanderson,https://www.amazon.com/kindle-dbs/entity/author/B001IGFHW6|g' $path"/test.csv"
-```
 
 Perform a test run of the container
 ```bash
-path=$(pwd)
-docker run -it --name books_check --rm -v $path:/books alpine_books
+docker run -it --name amazonbooks --rm -v ${PWD}:/books amazonbooks:latest
 ```
 
 ## Automation
