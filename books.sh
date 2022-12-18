@@ -1,5 +1,21 @@
 #!/bin/bash
-# init
+#================================================================
+#           FILE            : books.sh
+#
+#           USAGE           : ./books.sh
+#
+#           DESCRIPTION     : Download webpage and get
+#                                                               a list of all books from author
+#
+#           NOTES           : ---
+#           AUTHOR          : Jop Bakker
+#           CREATED         : 18/12/2022
+#           REVISION        : 2.0
+#================================================================
+# docker build -t amazonbooks:latest .
+# docker run -it --name amazonbooks --rm -v ~/docker-data/amazonbooks/:/books amazonbooks:latest
+
+#init
 MAIN_files='mainfiles/'
 HTML_results='/books/results.html'
 TEXT_results='/books/'
@@ -17,15 +33,22 @@ if [ ! -f "$FILE" ]; then
     touch $TEXT_results$MAIN_files${author[$i]}'.main'
 fi
 
-
 wget -O $HTML_results -U "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0" --no-check-certificate ${url[$i]}  > /dev/null 2>&1
 
-pcre2grep -o1 -e '(?:a aria-label=")(.*)(?=\sKindle)' $HTML_results | sort >> $TEXT_results${author[$i]}'.txt'
+pcre2grep -o1 -e '([a-zA-Z\(\)\d\w\s:,]+)(?:"},"variationDimensionLength":)' $HTML_results | sort | sed -e 's/^[ \t]*//' >> $TEXT_results${author[$i]}'.txt'
 
-# cecking diff
-comm -23 <(sort -u $TEXT_results${author[$i]}'.txt') <(sort -u $TEXT_results$MAIN_files${author[$i]}'.main') >> newbooks.txt
+# Looking for new books
+touch newbooks.txt
 
-# checking new books
+while IFS="" read -r p || [ -n "$p" ]
+do
+  test=$(grep "${p}" $TEXT_results$MAIN_files${author[$i]}'.main' | wc -l)
+  if [ $test -eq 0 ];then
+    echo "$p" >> newbooks.txt
+  fi
+done < $TEXT_results${author[$i]}'.txt'
+
+# sending new books with pushover
 linecount=$(cat newbooks.txt | wc -l)
 if (( $linecount > 0 ));then
 	echo $linecount "new books found for" ${author[$i]}

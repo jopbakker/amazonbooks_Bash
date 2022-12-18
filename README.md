@@ -2,6 +2,8 @@
 "system" to check for new books from authors
 
 ## setup
+Add your Pushover user and API key to the books.sh file.
+
 Build a new container with the dockerfile (executed from the same location as the Dockerfile)
 ```bash
 docker build -t alpine_books .
